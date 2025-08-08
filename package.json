@@ -6,7 +6,10 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --check . --config .prettierrc.mjs",
+    "format:fix": "prettier --write . --config .prettierrc.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
