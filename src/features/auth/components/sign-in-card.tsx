@@ -25,9 +25,12 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
   const { signIn } = useAuthActions()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isPending, setIsPending] = useState(false)
 
   const handleOAuthSignIn = (provider: 'google' | 'github') => {
-    signIn(provider)
+    setIsPending(true)
+
+    signIn(provider).finally(() => setIsPending(false))
   }
 
   return (
@@ -42,7 +45,7 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
       <CardContent className="space-y-5 px-0">
         <form className="space-y-2.5">
           <Input
-            disabled={false}
+            disabled={isPending}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
@@ -50,7 +53,7 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
             required
           />
           <Input
-            disabled={false}
+            disabled={isPending}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
@@ -58,7 +61,12 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
             required
           />
 
-          <Button disabled={false} type="submit" size="lg" className="w-full">
+          <Button
+            disabled={isPending}
+            type="submit"
+            size="lg"
+            className="w-full"
+          >
             Continue
           </Button>
         </form>
@@ -67,7 +75,7 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
 
         <div className="flex flex-col gap-y-2.5">
           <Button
-            disabled={false}
+            disabled={isPending}
             variant="outline"
             size="lg"
             className="relative w-full"
@@ -77,7 +85,7 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
             Continue with Google
           </Button>
           <Button
-            disabled={false}
+            disabled={isPending}
             variant="outline"
             size="lg"
             className="relative w-full"
@@ -92,7 +100,7 @@ export const SignInCard = ({ setState }: SignInCardProps) => {
           Don&apos;t have an account?{' '}
           <button
             onClick={() => setState('signUp')}
-            disabled={false}
+            disabled={isPending}
             className="cursor-pointer font-medium text-sky-700 hover:underline"
           >
             Sign up

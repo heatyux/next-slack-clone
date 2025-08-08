@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { useAuthActions } from '@convex-dev/auth/react'
 import { FaGithub } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 
@@ -21,9 +22,18 @@ interface SignUpCardProps {
 }
 
 export const SignUpCard = ({ setState }: SignUpCardProps) => {
+  const { signIn } = useAuthActions()
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [isPending, setIsPending] = useState(false)
+
+  const handleOAuthSignIn = (provider: 'google' | 'github') => {
+    setIsPending(true)
+
+    signIn(provider).finally(() => setIsPending(false))
+  }
 
   return (
     <Card className="size-full p-8">
@@ -37,7 +47,7 @@ export const SignUpCard = ({ setState }: SignUpCardProps) => {
       <CardContent className="space-y-5 px-0">
         <form className="space-y-2.5">
           <Input
-            disabled={false}
+            disabled={isPending}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
@@ -45,7 +55,7 @@ export const SignUpCard = ({ setState }: SignUpCardProps) => {
             required
           />
           <Input
-            disabled={false}
+            disabled={isPending}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
@@ -53,7 +63,7 @@ export const SignUpCard = ({ setState }: SignUpCardProps) => {
             required
           />
           <Input
-            disabled={false}
+            disabled={isPending}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             type="password"
@@ -61,7 +71,12 @@ export const SignUpCard = ({ setState }: SignUpCardProps) => {
             required
           />
 
-          <Button disabled={false} type="submit" size="lg" className="w-full">
+          <Button
+            disabled={isPending}
+            type="submit"
+            size="lg"
+            className="w-full"
+          >
             Continue
           </Button>
         </form>
@@ -70,19 +85,21 @@ export const SignUpCard = ({ setState }: SignUpCardProps) => {
 
         <div className="flex flex-col gap-y-2.5">
           <Button
-            disabled={false}
+            disabled={isPending}
             variant="outline"
             size="lg"
             className="relative w-full"
+            onClick={() => handleOAuthSignIn('google')}
           >
             <FcGoogle className="absolute left-2.5 size-5" />
             Continue with Google
           </Button>
           <Button
-            disabled={false}
+            disabled={isPending}
             variant="outline"
             size="lg"
             className="relative w-full"
+            onClick={() => handleOAuthSignIn('github')}
           >
             <FaGithub className="absolute left-2.5 size-5" />
             Continue with Github
@@ -93,7 +110,7 @@ export const SignUpCard = ({ setState }: SignUpCardProps) => {
           Already have an account?{' '}
           <button
             onClick={() => setState('signIn')}
-            disabled={false}
+            disabled={isPending}
             className="cursor-pointer font-medium text-sky-700 hover:underline"
           >
             Sign in
