@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { useAuthActions } from '@convex-dev/auth/react'
+import { TriangleAlert } from 'lucide-react'
 import { FaGithub } from 'react-icons/fa'
 import { FcGoogle } from 'react-icons/fc'
 
@@ -28,6 +29,45 @@ export const SignUpCard = ({ setState }: SignUpCardProps) => {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isPending, setIsPending] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSignUp = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    const validateEmail = (email: string) => {
+      return String(email)
+        .toLowerCase()
+        .match(
+          /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+        )
+    }
+
+    const validatePassword = (password: string) => {
+      return String(password).match(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@.#$!%*?&])[A-Za-z\d@.#$!%*?&]{8,15}$/,
+      )
+    }
+
+    if (!validateEmail(email)) {
+      setError('Invalid Email.')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      return setError("Password and Confirm Password doesn't match.")
+    }
+
+    if (!validatePassword(password)) {
+      return setError('Password must be strong.')
+    }
+
+    setIsPending(true)
+    setError('')
+
+    signIn('password', { email, password, flow: 'signUp' })
+      .catch(() => setError('Something went wrong!'))
+      .finally(() => setIsPending(false))
+  }
 
   const handleOAuthSignIn = (provider: 'google' | 'github') => {
     setIsPending(true)
@@ -44,8 +84,15 @@ export const SignUpCard = ({ setState }: SignUpCardProps) => {
         </CardDescription>
       </CardHeader>
 
+      {!!error && (
+        <div className="bg-destructive/15 text-destructive flex items-center gap-x-2 rounded-md p-3 text-sm">
+          <TriangleAlert className="size-4" />
+          <p>{error}</p>
+        </div>
+      )}
+
       <CardContent className="space-y-5 px-0">
-        <form className="space-y-2.5">
+        <form onSubmit={handleSignUp} className="space-y-2.5">
           <Input
             disabled={isPending}
             value={email}
