@@ -1,5 +1,9 @@
 'use client'
 
+import { useState } from 'react'
+
+import { useRouter } from 'next/navigation'
+
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -9,27 +13,47 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 
+import { useCreateWorkspace } from '../api/use-create-workspace'
 import { useCreateWorkspaceModal } from '../store/use-create-workspace-modal'
 
 export const CreateWorkspaceModal = () => {
+  const router = useRouter()
+
+  const [name, setName] = useState('')
   const [open, setOpen] = useCreateWorkspaceModal()
+  const { mutate, isPending } = useCreateWorkspace()
 
   const handleClose = () => {
     setOpen(false)
+    setName('')
+  }
 
-    // TODO: clear form
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+
+    await mutate(
+      { name },
+      {
+        onSuccess: (workspaceId) => {
+          router.push(`/workspaces/${workspaceId}`)
+          handleClose()
+        },
+      },
+    )
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open || isPending} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add a workspace</DialogTitle>
         </DialogHeader>
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <Input
-            disabled={false}
+            disabled={isPending}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             required
             autoFocus
             minLength={3}
@@ -37,7 +61,9 @@ export const CreateWorkspaceModal = () => {
             placeholder="Workspace name e.g 'Work', 'Personal', 'Home'"
           />
           <div className="flex justify-end">
-            <Button disabled={false}>Create</Button>
+            <Button type="submit" disabled={isPending}>
+              Create
+            </Button>
           </div>
         </form>
       </DialogContent>
