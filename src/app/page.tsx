@@ -4,8 +4,10 @@ import { useEffect, useMemo } from 'react'
 
 import { UserButton } from '@/features/auth/components/user-button'
 import { useGetWorkspaces } from '@/features/workspaces/api/use-get-workspaces'
+import { useCreateWorkspaceModal } from '@/features/workspaces/store/use-create-workspace-modal'
 
 export default function Home() {
+  const [open, setOpen] = useCreateWorkspaceModal()
   const { data, isLoading } = useGetWorkspaces()
 
   const workspace = useMemo(() => data?.[0]?._id, [data])
@@ -15,10 +17,10 @@ export default function Home() {
 
     if (workspace) {
       console.log('Redirect to workspace')
-    } else {
-      console.log('Open create modal')
+    } else if (!open) {
+      setOpen(true)
     }
-  }, [isLoading, workspace])
+  }, [isLoading, open, setOpen, workspace])
 
   return (
     <div>
