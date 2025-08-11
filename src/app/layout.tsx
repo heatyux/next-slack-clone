@@ -1,6 +1,7 @@
 import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { Toaster } from 'sonner'
 
 import { ConvexClientProvider } from '@/components/convex-client-provider'
 import { JotaiProvider } from '@/components/jotai-provider'
@@ -30,6 +31,7 @@ export default function RootLayout({
             <JotaiProvider>
               {children}
 
+              <Toaster theme="light" closeButton richColors />
               <ModalProvider />
             </JotaiProvider>
           </ConvexClientProvider>
