@@ -1,0 +1,80 @@
+'use client'
+
+import { Loader, Plus } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useGetWorkspace } from '@/features/workspaces/api/use-get-workspace'
+import { useGetWorkspaces } from '@/features/workspaces/api/use-get-workspaces'
+import { useGetWrokspaceId } from '@/features/workspaces/hooks/use-get-workspace-id'
+import { useCreateWorkspaceModal } from '@/features/workspaces/store/use-create-workspace-modal'
+
+export const WorkspaceSwitcher = () => {
+  const router = useRouter()
+  const workspaceId = useGetWrokspaceId()
+  const [, setOpen] = useCreateWorkspaceModal()
+
+  const { data: workspace, isLoading: workspaceLoading } = useGetWorkspace({
+    id: workspaceId,
+  })
+  const { data: workspaces } = useGetWorkspaces()
+
+  const filterWorkspaces = workspaces?.filter(
+    (workspace) => workspace._id !== workspaceId,
+  )
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button className="relative size-9 overflow-hidden bg-[#ABABAB] text-lg font-semibold text-slate-800 hover:bg-[#ABABAB]/80">
+          {workspaceLoading ? (
+            <Loader className="size-5 shrink-0 animate-spin" />
+          ) : (
+            workspace?.name.charAt(0).toUpperCase()
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="start" side="bottom" className="w-64">
+        <DropdownMenuItem
+          className="cursor-pointer flex-col items-start justify-start capitalize"
+          onClick={() => router.push(`/worskspaces/${workspaceId}`)}
+        >
+          {workspace?.name}
+          <span className="text-muted-foreground text-xs">
+            Active workspace
+          </span>
+        </DropdownMenuItem>
+
+        {filterWorkspaces?.map((workspace) => (
+          <DropdownMenuItem
+            key={workspace._id}
+            className="cursor-pointer overflow-hidden capitalize"
+            onClick={() => router.push(`/workspaces/${workspace._id}`)}
+          >
+            <div className="mr-2 flex size-9 shrink-0 items-center justify-center rounded-md bg-[#616061] text-xl font-semibold text-white">
+              {workspace.name.charAt(0).toUpperCase()}
+            </div>
+            <p className="truncate">{workspace.name}</p>
+          </DropdownMenuItem>
+        ))}
+
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => setOpen(true)}
+        >
+          <div className="relative mr-2 flex size-9 items-center justify-center overflow-hidden rounded-md bg-[#F2F2F2] text-xl font-semibold text-slate-800">
+            <Plus />
+          </div>
+          Create a new workspace
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}

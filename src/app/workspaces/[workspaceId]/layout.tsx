@@ -2,6 +2,7 @@
 
 import { PropsWithChildren } from 'react'
 
+import { Sidebar } from './sidebar'
 import { Toolbar } from './toolbar'
 
 const WorkspaceIdLayout = ({ children }: PropsWithChildren) => {
@@ -9,7 +10,11 @@ const WorkspaceIdLayout = ({ children }: PropsWithChildren) => {
     <div className="h-full">
       <Toolbar />
 
-      {children}
+      <div className="flex h-[calc(100vh_-_40px)]">
+        <Sidebar />
+
+        {children}
+      </div>
     </div>
   )
 }
