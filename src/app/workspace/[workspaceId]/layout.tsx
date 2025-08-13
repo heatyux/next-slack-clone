@@ -10,6 +10,7 @@ import {
 
 import { Sidebar } from './sidebar'
 import { Toolbar } from './toolbar'
+import { WorkspaceSidebar } from './workspace-sidebar'
 
 const WorkspaceIdLayout = ({ children }: PropsWithChildren) => {
   return (
@@ -28,7 +29,7 @@ const WorkspaceIdLayout = ({ children }: PropsWithChildren) => {
             minSize={11}
             className="bg-[#5E2C5F]"
           >
-            workspace sidebar
+            <WorkspaceSidebar />
           </ResizablePanel>
 
           <ResizableHandle withHandle />
