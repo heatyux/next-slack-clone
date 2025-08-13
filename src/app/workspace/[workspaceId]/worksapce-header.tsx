@@ -1,3 +1,7 @@
+'use client'
+
+import { useState } from 'react'
+
 import { ChevronDown, ListFilter, SquarePen } from 'lucide-react'
 
 import { Hint } from '@/components/hint'
@@ -11,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { Doc } from '../../../../convex/_generated/dataModel'
+import { PreferencesModal } from './preferences-modal'
 
 interface WorkspaceHeaderProps {
   workspace: Doc<'workspaces'>
@@ -21,57 +26,70 @@ export const WorkspaceHeader = ({
   workspace,
   isAdmin,
 }: WorkspaceHeaderProps) => {
+  const [preferencesOpen, setPreferencesOpen] = useState(false)
+
   return (
-    <div className="flex h-[49px] items-center justify-between gap-0.5 px-4">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="transparent"
-            size="sm"
-            className="overflow-hidden p-1.5 text-lg font-semibold focus-visible:ring-0"
-          >
-            <span className="truncate">{workspace.name}</span>
-            <ChevronDown className="ml-1 size-4 shrink-0" />
-          </Button>
-        </DropdownMenuTrigger>
+    <>
+      <div className="flex h-[49px] items-center justify-between gap-0.5 px-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="transparent"
+              size="sm"
+              className="overflow-hidden p-1.5 text-lg font-semibold focus-visible:ring-0"
+            >
+              <span className="truncate">{workspace.name}</span>
+              <ChevronDown className="ml-1 size-4 shrink-0" />
+            </Button>
+          </DropdownMenuTrigger>
 
-        <DropdownMenuContent side="bottom" align="start">
-          <DropdownMenuItem className="cursor-pointer capitalize">
-            <div className="relative mr-2 flex size-9 items-center justify-center overflow-hidden rounded-md bg-[#616061] text-xl font-semibold text-white">
-              {workspace.name.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex flex-col">
-              <p className="font-bold">{workspace.name}</p>
-              <p className="text-muted-foreground">Active workspace</p>
-            </div>
-          </DropdownMenuItem>
-          {isAdmin && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer py-2">
-                Invite people to {workspace.name}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer py-2">
-                Preferences
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+          <DropdownMenuContent side="bottom" align="start">
+            <DropdownMenuItem className="cursor-pointer capitalize">
+              <div className="relative mr-2 flex size-9 items-center justify-center overflow-hidden rounded-md bg-[#616061] text-xl font-semibold text-white">
+                {workspace.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex flex-col">
+                <p className="font-bold">{workspace.name}</p>
+                <p className="text-muted-foreground">Active workspace</p>
+              </div>
+            </DropdownMenuItem>
+            {isAdmin && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer py-2">
+                  Invite people to {workspace.name}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="cursor-pointer py-2"
+                  onClick={() => setPreferencesOpen(true)}
+                >
+                  Preferences
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
-      <div className="flex items-center gap-0.5">
-        <Hint label="Filter conversations" side="bottom">
-          <Button variant="transparent" size="iconSm">
-            <ListFilter className="size-4" />
-          </Button>
-        </Hint>
-        <Hint label="New message" side="bottom">
-          <Button variant="transparent" size="iconSm">
-            <SquarePen className="size-4" />
-          </Button>
-        </Hint>
+        <div className="flex items-center gap-0.5">
+          <Hint label="Filter conversations" side="bottom">
+            <Button variant="transparent" size="iconSm">
+              <ListFilter className="size-4" />
+            </Button>
+          </Hint>
+          <Hint label="New message" side="bottom">
+            <Button variant="transparent" size="iconSm">
+              <SquarePen className="size-4" />
+            </Button>
+          </Hint>
+        </div>
       </div>
-    </div>
+
+      <PreferencesModal
+        open={preferencesOpen}
+        setOpen={setPreferencesOpen}
+        initialValue={workspace.name}
+      />
+    </>
   )
 }
