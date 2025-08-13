@@ -9,13 +9,13 @@ import {
 
 import { useCurrentMember } from '@/features/members/api/use-current-member'
 import { useGetWorkspace } from '@/features/workspaces/api/use-get-workspace'
-import { useGetWrokspaceId } from '@/features/workspaces/hooks/use-get-workspace-id'
+import { useWorkspaceId } from '@/hooks/use-workspace-id'
 
 import { SidebarItem } from './sidebar-item'
 import { WorkspaceHeader } from './worksapce-header'
 
 export const WorkspaceSidebar = () => {
-  const workspaceId = useGetWrokspaceId()
+  const workspaceId = useWorkspaceId()
   const { data: member, isLoading: memberLoading } = useCurrentMember({
     workspaceId,
   })

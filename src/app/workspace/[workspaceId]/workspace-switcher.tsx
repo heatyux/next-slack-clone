@@ -12,12 +12,12 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useGetWorkspace } from '@/features/workspaces/api/use-get-workspace'
 import { useGetWorkspaces } from '@/features/workspaces/api/use-get-workspaces'
-import { useGetWrokspaceId } from '@/features/workspaces/hooks/use-get-workspace-id'
 import { useCreateWorkspaceModal } from '@/features/workspaces/store/use-create-workspace-modal'
+import { useWorkspaceId } from '@/hooks/use-workspace-id'
 
 export const WorkspaceSwitcher = () => {
   const router = useRouter()
-  const workspaceId = useGetWrokspaceId()
+  const workspaceId = useWorkspaceId()
   const [, setOpen] = useCreateWorkspaceModal()
 
   const { data: workspace, isLoading: workspaceLoading } = useGetWorkspace({

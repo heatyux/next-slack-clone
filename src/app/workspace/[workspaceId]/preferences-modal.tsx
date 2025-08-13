@@ -20,8 +20,8 @@ import {
 import { Input } from '@/components/ui/input'
 import { useRemoveWorkspace } from '@/features/workspaces/api/use-remove-workspace'
 import { useUpdateWorkspace } from '@/features/workspaces/api/use-update-workspace'
-import { useGetWrokspaceId } from '@/features/workspaces/hooks/use-get-workspace-id'
 import { useConfirm } from '@/hooks/use-confirm'
+import { useWorkspaceId } from '@/hooks/use-workspace-id'
 
 interface PreferencesModalProps {
   open: boolean
@@ -34,7 +34,7 @@ export const PreferencesModal = ({
   setOpen,
   initialValue,
 }: PreferencesModalProps) => {
-  const workspaceId = useGetWrokspaceId()
+  const workspaceId = useWorkspaceId()
   const [value, setValue] = useState(initialValue)
   const [editOpen, setEditOpen] = useState(false)
 

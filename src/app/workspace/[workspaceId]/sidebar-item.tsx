@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { IconType } from 'react-icons/lib'
 
 import { Button } from '@/components/ui/button'
-import { useGetWrokspaceId } from '@/features/workspaces/hooks/use-get-workspace-id'
+import { useWorkspaceId } from '@/hooks/use-workspace-id'
 import { cn } from '@/lib/utils'
 
 const sidebarItemVariants = cva(
@@ -35,7 +35,7 @@ export const SidebarItem = ({
   icon: Icon,
   variant,
 }: SidebarItemProps) => {
-  const workspaceId = useGetWrokspaceId()
+  const workspaceId = useWorkspaceId()
 
   return (
     <Button
