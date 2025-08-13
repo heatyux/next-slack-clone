@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden'
 import { Trash } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -10,6 +11,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -103,6 +105,10 @@ export const PreferencesModal = ({
             <DialogTitle>{initialValue}</DialogTitle>
           </DialogHeader>
 
+          <VisuallyHidden.Root>
+            <DialogDescription>Your workspace preferences</DialogDescription>
+          </VisuallyHidden.Root>
+
           <div className="flex flex-col gap-y-2 px-4 pb-4">
             <Dialog
               open={editOpen || isUpdatingWorkspace}
@@ -119,6 +125,12 @@ export const PreferencesModal = ({
                   <p className="text-sm">{initialValue}</p>
                 </button>
               </DialogTrigger>
+
+              <VisuallyHidden.Root>
+                <DialogDescription>
+                  Remove your workspace to match your case.
+                </DialogDescription>
+              </VisuallyHidden.Root>
 
               <DialogContent>
                 <DialogHeader>
