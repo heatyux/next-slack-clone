@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 
+import { toast } from 'sonner'
+
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,12 +12,17 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { useWorkspaceId } from '@/hooks/use-workspace-id'
 
+import { useCreateChannel } from '../api/use-create-channel'
 import { useCreateChannelModal } from '../store/use-create-channel-modal'
 
 export const CreateChannelModal = () => {
+  const workspaceId = useWorkspaceId()
   const [name, setName] = useState('')
   const [open, setOpen] = useCreateChannelModal()
+
+  const { mutate, isPending } = useCreateChannel()
 
   const handleClose = () => {
     setName('')
@@ -28,16 +35,38 @@ export const CreateChannelModal = () => {
     setName(value)
   }
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    mutate(
+      {
+        name,
+        workspaceId,
+      },
+      {
+        onSuccess: () => {
+          toast.success('Channel created!')
+          // TODO: Redirect to new channel
+          handleClose()
+        },
+        onError: (error) => {
+          console.error('[CREATE_CHANNEL]:', error)
+          toast.error('Failed to create channel.')
+        },
+      },
+    )
+  }
+
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open || isPending} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add a channel</DialogTitle>
         </DialogHeader>
 
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            disabled={false}
+            disabled={isPending}
             value={name}
             onChange={handleChange}
             placeholder="e.g plan-budget"
@@ -48,7 +77,7 @@ export const CreateChannelModal = () => {
           />
 
           <div className="flex justify-end">
-            <Button type="submit" disabled={false}>
+            <Button type="submit" disabled={isPending}>
               Create
             </Button>
           </div>
