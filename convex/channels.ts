@@ -25,7 +25,7 @@ export const get = query({
       return []
     }
 
-    const channels = ctx.db
+    const channels = await ctx.db
       .query('channels')
       .withIndex('by_workspace_id', (q) =>
         q.eq('workspaceId', args.workspaceId),
