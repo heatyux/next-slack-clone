@@ -64,7 +64,7 @@ export const getInfoById = query({
     const userId = await getAuthUserId(ctx)
 
     if (!userId) {
-      throw new Error('Unauthorized.')
+      return null
     }
 
     const member = await ctx.db
@@ -76,8 +76,12 @@ export const getInfoById = query({
 
     const workspace = await ctx.db.get(args.id)
 
+    if (!workspace) {
+      return null
+    }
+
     return {
-      name: workspace?.name,
+      name: workspace.name,
       isMember: !!member,
     }
   },
