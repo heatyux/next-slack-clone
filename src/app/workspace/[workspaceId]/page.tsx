@@ -29,7 +29,7 @@ const WorkspaceIdPage = () => {
 
     if (channelId) {
       router.replace(`/workspace/${workspaceId}/channel/${channelId}`)
-    } else if (!open && !workspace.isMember) {
+    } else if (!open && workspace.role === 'admin') {
       setOpen(true)
     }
   }, [
