@@ -60,16 +60,12 @@ const WorkspaceIdPage = () => {
     )
   }
 
-  if (!channels || channels?.length === 0) {
-    return (
-      <div className="felx-col flex h-full flex-1 items-center justify-center gap-2 bg-[#5E2C5F]/95 text-white">
-        <TriangleAlert className="size-6" />
-        <span className="text-sm">No Channels found.</span>
-      </div>
-    )
-  }
-
-  return null
+  return (
+    <div className="felx-col flex h-full flex-1 items-center justify-center gap-2 bg-[#5E2C5F]/95 text-white">
+      <TriangleAlert className="size-6" />
+      <span className="text-sm">No Channel(s) found.</span>
+    </div>
+  )
 }
 
 export default WorkspaceIdPage
