@@ -20,6 +20,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { useRemoveChannel } from '@/features/channels/api/use-remove-channel'
 import { useUpdateChannel } from '@/features/channels/api/use-update-channel'
+import { useCurrentMember } from '@/features/members/api/use-current-member'
 import { useChannelId } from '@/hooks/use-channel-id'
 import { useConfirm } from '@/hooks/use-confirm'
 import { useWorkspaceId } from '@/hooks/use-workspace-id'
@@ -41,10 +42,19 @@ export const Header = ({ channelName }: HeaderProps) => {
     'You are about to delete this channel and any of this associated messages. This action is irreversible.',
   )
 
+  const { data: member, isLoading: memberLoading } = useCurrentMember({
+    workspaceId,
+  })
   const { mutate: updateChannel, isPending: isUpdatingChannel } =
     useUpdateChannel()
   const { mutate: removeChannel, isPending: isRemovingChannel } =
     useRemoveChannel()
+
+  const handleEditOpen = (value: boolean) => {
+    if (member?.role !== 'admin') return
+
+    setEditOpen(value)
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\s+/g, '-').toLowerCase()
@@ -100,6 +110,7 @@ export const Header = ({ channelName }: HeaderProps) => {
       <Dialog>
         <DialogTrigger asChild>
           <Button
+            disabled={memberLoading}
             variant="ghost"
             size="sm"
             className="w-auto overflow-hidden px-2 text-lg font-semibold"
@@ -121,7 +132,7 @@ export const Header = ({ channelName }: HeaderProps) => {
           <div className="flex flex-col gap-y-2 px-4 pb-4">
             <Dialog
               open={editOpen || isUpdatingChannel}
-              onOpenChange={setEditOpen}
+              onOpenChange={handleEditOpen}
             >
               <DialogTrigger asChild>
                 <button
@@ -130,9 +141,11 @@ export const Header = ({ channelName }: HeaderProps) => {
                 >
                   <div className="flex w-full items-center justify-between">
                     <p className="text-sm font-semibold">Channel name</p>
-                    <p className="text-sm font-semibold text-[#1264A3] hover:underline">
-                      Edit
-                    </p>
+                    {member?.role === 'admin' && (
+                      <p className="text-sm font-semibold text-[#1264A3] hover:underline">
+                        Edit
+                      </p>
+                    )}
                   </div>
 
                   <p className="text-sm"># {channelName}</p>
@@ -177,14 +190,16 @@ export const Header = ({ channelName }: HeaderProps) => {
               </DialogContent>
             </Dialog>
 
-            <button
-              disabled={isRemovingChannel}
-              onClick={handleDelete}
-              className="flex cursor-pointer items-center gap-x-2 rounded-lg border bg-white px-5 py-4 text-rose-600 hover:bg-gray-50 disabled:pointer-events-none disabled:bg-gray-50"
-            >
-              <Trash className="size-4" />
-              <p className="text-sm font-semibold">Delete channel</p>
-            </button>
+            {member?.role === 'admin' && (
+              <button
+                disabled={isRemovingChannel}
+                onClick={handleDelete}
+                className="flex cursor-pointer items-center gap-x-2 rounded-lg border bg-white px-5 py-4 text-rose-600 hover:bg-gray-50 disabled:pointer-events-none disabled:bg-gray-50"
+              >
+                <Trash className="size-4" />
+                <p className="text-sm font-semibold">Delete channel</p>
+              </button>
+            )}
           </div>
         </DialogContent>
       </Dialog>
