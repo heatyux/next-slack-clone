@@ -17,7 +17,7 @@ import { useWorkspaceId } from '@/hooks/use-workspace-id'
 
 import { SidebarItem } from './sidebar-item'
 import { UserItem } from './user-item'
-import { WorkspaceHeader } from './worksapce-header'
+import { WorkspaceHeader } from './workspace-header'
 import { WorkspaceSection } from './workspace-section'
 
 export const WorkspaceSidebar = () => {

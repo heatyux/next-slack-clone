@@ -14,7 +14,7 @@ export const get = query({
 
     const member = await ctx.db
       .query('members')
-      .withIndex('by_workpsace_id_user_id', (q) =>
+      .withIndex('by_workspace_id_user_id', (q) =>
         q.eq('workspaceId', args.workspaceId).eq('userId', userId),
       )
       .unique()
@@ -25,7 +25,7 @@ export const get = query({
 
     const data = await ctx.db
       .query('members')
-      .withIndex('by_workpsace_id', (q) =>
+      .withIndex('by_workspace_id', (q) =>
         q.eq('workspaceId', args.workspaceId),
       )
       .collect()
@@ -58,7 +58,7 @@ export const current = query({
 
     const member = await ctx.db
       .query('members')
-      .withIndex('by_workpsace_id_user_id', (q) =>
+      .withIndex('by_workspace_id_user_id', (q) =>
         q.eq('workspaceId', args.workspaceId).eq('userId', userId),
       )
       .unique()

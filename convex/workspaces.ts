@@ -104,7 +104,7 @@ export const update = mutation({
 
     const member = await ctx.db
       .query('members')
-      .withIndex('by_workpsace_id_user_id', (q) =>
+      .withIndex('by_workspace_id_user_id', (q) =>
         q.eq('workspaceId', args.id).eq('userId', userId),
       )
       .unique()
@@ -134,7 +134,7 @@ export const remove = mutation({
 
     const member = await ctx.db
       .query('members')
-      .withIndex('by_workpsace_id_user_id', (q) =>
+      .withIndex('by_workspace_id_user_id', (q) =>
         q.eq('workspaceId', args.id).eq('userId', userId),
       )
       .unique()
@@ -147,7 +147,7 @@ export const remove = mutation({
     const [members] = await Promise.all([
       ctx.db
         .query('members')
-        .withIndex('by_workpsace_id', (q) => q.eq('workspaceId', args.id))
+        .withIndex('by_workspace_id', (q) => q.eq('workspaceId', args.id))
         .collect(),
     ])
 
@@ -174,7 +174,7 @@ export const newJoinCode = mutation({
 
     const member = await ctx.db
       .query('members')
-      .withIndex('by_workpsace_id_user_id', (q) =>
+      .withIndex('by_workspace_id_user_id', (q) =>
         q.eq('workspaceId', args.workspaceId).eq('userId', userId),
       )
       .unique()

@@ -16,7 +16,7 @@ export const get = query({
 
     const member = ctx.db
       .query('members')
-      .withIndex('by_workpsace_id_user_id', (q) =>
+      .withIndex('by_workspace_id_user_id', (q) =>
         q.eq('workspaceId', args.workspaceId).eq('userId', userId),
       )
       .unique()
@@ -50,7 +50,7 @@ export const create = mutation({
 
     const member = await ctx.db
       .query('members')
-      .withIndex('by_workpsace_id_user_id', (q) =>
+      .withIndex('by_workspace_id_user_id', (q) =>
         q.eq('workspaceId', args.workspaceId).eq('userId', userId),
       )
       .unique()
