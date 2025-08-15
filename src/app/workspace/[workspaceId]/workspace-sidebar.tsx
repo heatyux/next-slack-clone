@@ -13,6 +13,7 @@ import { useCreateChannelModal } from '@/features/channels/store/use-create-chan
 import { useCurrentMember } from '@/features/members/api/use-current-member'
 import { useGetMembers } from '@/features/members/api/use-get-members'
 import { useGetWorkspace } from '@/features/workspaces/api/use-get-workspace'
+import { useChannelId } from '@/hooks/use-channel-id'
 import { useWorkspaceId } from '@/hooks/use-workspace-id'
 
 import { SidebarItem } from './sidebar-item'
@@ -22,6 +23,7 @@ import { WorkspaceSection } from './workspace-section'
 
 export const WorkspaceSidebar = () => {
   const workspaceId = useWorkspaceId()
+  const channelId = useChannelId()
 
   const [, setOpen] = useCreateChannelModal()
 
@@ -31,10 +33,14 @@ export const WorkspaceSidebar = () => {
   const { data: workspace, isLoading: workspaceLoading } = useGetWorkspace({
     id: workspaceId,
   })
-  const { data: channels } = useGetChannels({ workspaceId })
-  const { data: members } = useGetMembers({ workspaceId })
+  const { data: channels, isLoading: channelsLoading } = useGetChannels({
+    workspaceId,
+  })
+  const { data: members, isLoading: membersLoading } = useGetMembers({
+    workspaceId,
+  })
 
-  if (memberLoading || workspaceLoading) {
+  if (memberLoading || workspaceLoading || channelsLoading || membersLoading) {
     return (
       <div className="flex h-full items-center justify-center bg-[#5E2C5F]">
         <Loader className="size-5 animate-spin text-white" />
@@ -75,25 +81,28 @@ export const WorkspaceSidebar = () => {
               id={channel._id}
               label={channel.name}
               icon={HashIcon}
+              variant={channel._id === channelId ? 'active' : 'default'}
             />
           ))}
         </WorkspaceSection>
       )}
 
-      <WorkspaceSection
-        label="Direct Messages"
-        hint="New Direct Message"
-        onNew={member.role === 'admin' ? () => {} : undefined}
-      >
-        {members?.map((member) => (
-          <UserItem
-            key={member._id}
-            id={member._id}
-            label={member.user.name}
-            image={member.user.image}
-          />
-        ))}
-      </WorkspaceSection>
+      {members && members.length > 0 && (
+        <WorkspaceSection
+          label="Direct Messages"
+          hint="New Direct Message"
+          onNew={member.role === 'admin' ? () => {} : undefined}
+        >
+          {members?.map((member) => (
+            <UserItem
+              key={member._id}
+              id={member._id}
+              label={member.user.name}
+              image={member.user.image}
+            />
+          ))}
+        </WorkspaceSection>
+      )}
     </div>
   )
 }
