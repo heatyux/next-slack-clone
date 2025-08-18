@@ -127,3 +127,9 @@
     @apply h-full;
   }
 }
+
+/* Editor style for quill */
+.ql-container {
+  font-family: 'Lato', sans-serif !important;
+  border: none !important;
+}
