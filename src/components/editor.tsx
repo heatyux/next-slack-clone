@@ -1,20 +1,59 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { ImageIcon, Smile } from 'lucide-react'
-import Quill, { type QuillOptions } from 'quill'
+import Quill, { type Delta, type Op, type QuillOptions } from 'quill'
+import 'quill/dist/quill.snow.css'
+import { MdSend } from 'react-icons/md'
 import { PiTextAa } from 'react-icons/pi'
+
+import { cn } from '@/lib/utils'
 
 import { Hint } from './hint'
 import { Button } from './ui/button'
 
-type EditorProps = {
-  placeholder?: string
+type EditorValue = {
+  image: File | null
+  body: string
 }
 
-const Editor = ({}: EditorProps) => {
+type EditorProps = {
+  onSubmit: ({ image, body }: EditorValue) => void
+  onCancel?: () => void
+  placeholder?: string
+  defaultValue?: Delta | Op[]
+  disabled?: boolean
+  variant?: 'create' | 'update'
+  innerRef?: RefObject<Quill | null>
+}
+
+const Editor = ({
+  onSubmit,
+  onCancel,
+  placeholder = 'Write something...',
+  defaultValue = [],
+  disabled = false,
+  variant = 'create',
+  innerRef,
+}: EditorProps) => {
+  const [text, setText] = useState('')
+  const [isToolbarVisible, setIsToolbarVisible] = useState(true)
+
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const quillRef = useRef<Quill | null>(null)
+
+  const placeholderRef = useRef(placeholder)
+  const defaultValueRef = useRef(defaultValue)
+  const disabledRef = useRef(disabled)
+  const submitRef = useRef(onSubmit)
+
+  useLayoutEffect(() => {
+    placeholderRef.current = placeholder
+    defaultValueRef.current = defaultValue
+    disabledRef.current = disabled
+    submitRef.current = onSubmit
+  })
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -24,36 +63,163 @@ const Editor = ({}: EditorProps) => {
       container.ownerDocument.createElement('div'),
     )
 
-    const options: QuillOptions = {}
+    const options: QuillOptions = {
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'strike'],
+          ['link'],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+        ],
+        keyboard: {
+          bindings: {
+            enter: {
+              key: 'Enter',
+              handler: () => {
+                // TODO: Submit form
+                return
+              },
+            },
+            shift_enter: {
+              key: 'Enter',
+              shiftKey: true,
+              handler: () => {
+                quill.insertText(quill.getSelection()?.index || 0, '\n')
+              },
+            },
+          },
+        },
+      },
+      placeholder: placeholderRef.current,
+      theme: 'snow',
+    }
 
-    new Quill(editorContainer, options)
+    const quill = new Quill(editorContainer, options)
+
+    quillRef.current = quill
+    quillRef.current.focus()
+
+    if (innerRef) {
+      innerRef.current = quill
+    }
+
+    quill.setContents(defaultValueRef.current)
+    setText(quill.getText())
+
+    quill.on(Quill.events.TEXT_CHANGE, () => {
+      setText(quill.getText())
+    })
 
     return () => {
       if (container) container.innerHTML = ''
+
+      quill.off(Quill.events.TEXT_CHANGE)
+
+      if (quillRef) quillRef.current = null
+      if (innerRef) innerRef.current = null
     }
-  }, [])
+  }, [innerRef])
+
+  const toggleToolbar = () => {
+    setIsToolbarVisible((current) => !current)
+
+    const toolbarElement = containerRef.current?.querySelector('.ql-toolbar')
+
+    if (toolbarElement) {
+      toolbarElement.classList.toggle('hidden')
+    }
+  }
+
+  const isIOS = /iPad|iPhone|iPod|Mac/.test(navigator.userAgent)
+
+  const isEmpty = text.replace(/<(.|\n)*?>/g, '').trim().length === 0
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-col overflow-hidden rounded-md border border-slate-200 bg-white transition">
-        <div ref={containerRef} className="ql-render h-full"></div>
+      <div className="flex flex-col overflow-hidden rounded-md border border-slate-200 bg-white transition focus-within:border-slate-300 focus-within:shadow-sm">
+        <div ref={containerRef} className="ql-renderer h-full"></div>
+
         <div className="z-[5] flex px-2 pb-2">
-          <Hint label={'Hide formatting'}>
-            <Button variant="ghost" size="iconSm">
+          <Hint
+            label={isToolbarVisible ? 'Hide formatting' : 'Show formatting'}
+          >
+            <Button
+              disabled={disabled}
+              variant="ghost"
+              size="iconSm"
+              onClick={toggleToolbar}
+            >
               <PiTextAa className="size-4" />
             </Button>
           </Hint>
           <Hint label={'Emoji'}>
-            <Button variant="ghost" size="iconSm">
+            <Button
+              disabled={disabled}
+              variant="ghost"
+              size="iconSm"
+              onClick={() => {}}
+            >
               <Smile className="size-4" />
             </Button>
           </Hint>
-          <Hint label={'Image'}>
-            <Button variant="ghost" size="iconSm">
-              <ImageIcon className="size-4" />
+
+          {variant === 'create' && (
+            <Hint label={'Image'}>
+              <Button
+                disabled={disabled}
+                variant="ghost"
+                size="iconSm"
+                onClick={() => {}}
+              >
+                <ImageIcon className="size-4" />
+              </Button>
+            </Hint>
+          )}
+
+          {variant === 'update' && (
+            <div className="ml-auto flex items-center gap-x-2">
+              <Button
+                onClick={onCancel}
+                disabled={disabled}
+                variant="outline"
+                size="sm"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={disabled}
+                size="sm"
+                className="bg-[#007A5A] text-white hover:bg-[#007A5A]/80"
+                onClick={() => {}}
+              >
+                Save
+              </Button>
+            </div>
+          )}
+
+          {variant === 'create' && (
+            <Button
+              disabled={disabled}
+              title="Send Message"
+              size="iconSm"
+              className={cn(
+                'ml-auto',
+                isEmpty
+                  ? 'text-muted-foreground bg-white hover:bg-white/80'
+                  : 'bg-[#007A5A] text-white hover:bg-[#007A5A]/80',
+              )}
+              onClick={() => {}}
+            >
+              <MdSend className="size-4" />
             </Button>
-          </Hint>
+          )}
         </div>
+      </div>
+
+      <div className="text-muted-foreground flex justify-end p-2 text-[10px]">
+        <p>
+          <strong>Shift + {isIOS ? 'Return' : 'Enter'}</strong> to add a new
+          line.
+        </p>
       </div>
     </div>
   )
