@@ -10,6 +10,7 @@ import { PiTextAa } from 'react-icons/pi'
 
 import { cn } from '@/lib/utils'
 
+import { EmojiPopover } from './emoji-popover'
 import { Hint } from './hint'
 import { Button } from './ui/button'
 
@@ -129,6 +130,15 @@ const Editor = ({
     }
   }
 
+  const onEmojiSelect = (emoji: any) => {
+    // TODO: emoji type
+    const quill = quillRef.current
+
+    if (!quill) return
+
+    quill.insertText(quill.getSelection()?.index || 0, emoji.native)
+  }
+
   const isIOS = /iPad|iPhone|iPod|Mac/.test(navigator.userAgent)
 
   const isEmpty = text.replace(/<(.|\n)*?>/g, '').trim().length === 0
@@ -151,16 +161,11 @@ const Editor = ({
               <PiTextAa className="size-4" />
             </Button>
           </Hint>
-          <Hint label={'Emoji'}>
-            <Button
-              disabled={disabled}
-              variant="ghost"
-              size="iconSm"
-              onClick={() => {}}
-            >
+          <EmojiPopover onEmojiSelect={onEmojiSelect}>
+            <Button disabled={disabled} variant="ghost" size="iconSm">
               <Smile className="size-4" />
             </Button>
-          </Hint>
+          </EmojiPopover>
 
           {variant === 'create' && (
             <Hint label={'Image'}>
