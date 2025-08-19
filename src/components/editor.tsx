@@ -215,12 +215,14 @@ const Editor = ({
         </div>
       </div>
 
-      <div className="text-muted-foreground flex justify-end p-2 text-[10px]">
-        <p>
-          <strong>Shift + {isIOS ? 'Return' : 'Enter'}</strong> to add a new
-          line.
-        </p>
-      </div>
+      {variant === 'create' && (
+        <div className="text-muted-foreground flex justify-end p-2 text-[10px]">
+          <p>
+            <strong>Shift + {isIOS ? 'Return' : 'Enter'}</strong> to add a new
+            line.
+          </p>
+        </div>
+      )}
     </div>
   )
 }
