@@ -79,8 +79,23 @@ const Editor = ({
             enter: {
               key: 'Enter',
               handler: () => {
-                // TODO: Submit form
-                return
+                if (!imageElementRef.current || !submitRef.current) return
+
+                const text = quill.getText()
+
+                const addedImage = imageElementRef.current.files?.[0] || null
+
+                const isEmpty =
+                  !addedImage &&
+                  text.replace(/<(.|\n)*?>/g, '').trim().length === 0
+
+                if (isEmpty) {
+                  return
+                }
+
+                const body = JSON.stringify(quill.getContents())
+
+                submitRef.current({ body, image: addedImage })
               },
             },
             shift_enter: {
@@ -144,7 +159,7 @@ const Editor = ({
 
   const isIOS = /iPad|iPhone|iPod|Mac/.test(navigator.userAgent)
 
-  const isEmpty = text.replace(/<(.|\n)*?>/g, '').trim().length === 0
+  const isEmpty = !image && text.replace(/<(.|\n)*?>/g, '').trim().length === 0
 
   return (
     <div className="flex flex-col">
@@ -224,10 +239,17 @@ const Editor = ({
                 Cancel
               </Button>
               <Button
-                disabled={disabled}
+                disabled={disabled || isEmpty}
                 size="sm"
                 className="bg-[#007A5A] text-white hover:bg-[#007A5A]/80"
-                onClick={() => {}}
+                onClick={() => {
+                  if (!quillRef.current) return
+
+                  onSubmit({
+                    body: JSON.stringify(quillRef.current.getContents()),
+                    image,
+                  })
+                }}
               >
                 Save
               </Button>
@@ -236,7 +258,7 @@ const Editor = ({
 
           {variant === 'create' && (
             <Button
-              disabled={disabled}
+              disabled={disabled || isEmpty}
               title="Send Message"
               size="iconSm"
               className={cn(
@@ -245,7 +267,14 @@ const Editor = ({
                   ? 'text-muted-foreground bg-white hover:bg-white/80'
                   : 'bg-[#007A5A] text-white hover:bg-[#007A5A]/80',
               )}
-              onClick={() => {}}
+              onClick={() => {
+                if (!quillRef.current) return
+
+                onSubmit({
+                  body: JSON.stringify(quillRef.current.getContents()),
+                  image,
+                })
+              }}
             >
               <MdSend className="size-4" />
             </Button>
