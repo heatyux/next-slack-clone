@@ -21,6 +21,16 @@ const schema = defineSchema({
     name: v.string(),
     workspaceId: v.id('workspaces'),
   }).index('by_workspace_id', ['workspaceId']),
+  messages: defineTable({
+    body: v.string(),
+    image: v.optional(v.id('_storage')), // '_storage' is convex internal storage id
+    memberId: v.id('members'),
+    workspaceId: v.id('workspaces'),
+    channelId: v.optional(v.id('channels')), // optional, because maybe have private chat or send to self message
+    parentMessageId: v.optional(v.id('messages')),
+    // TODO: add conversation id
+    updatedAt: v.optional(v.number()),
+  }),
 })
 
 export default schema
