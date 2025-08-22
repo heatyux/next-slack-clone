@@ -3,10 +3,12 @@ import dynamic from 'next/dynamic'
 
 import type { Doc } from '../../convex/_generated/dataModel'
 import { Hint } from './hint'
+import { Thumbnail } from './thumbnail'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 
 interface MessageProps {
   body: string
+  image: string | null | undefined
   authorName?: string
   authorImage?: string
   createdAt: Doc<'messages'>['_creationTime']
@@ -22,6 +24,7 @@ const formatFullTime = (date: Date) => {
 
 export const Message = ({
   body,
+  image,
   authorName,
   authorImage,
   createdAt,
@@ -42,6 +45,7 @@ export const Message = ({
 
           <div className="flex w-full flex-col">
             <Renderer value={body} />
+            <Thumbnail url={image} />
 
             {updatedAt ? (
               <span className="text-muted-foreground text-xs">(edited)</span>
@@ -81,6 +85,7 @@ export const Message = ({
           </div>
 
           <Renderer value={body} />
+          <Thumbnail url={image} />
 
           {updatedAt ? (
             <span className="text-muted-foreground text-xs">(edited)</span>

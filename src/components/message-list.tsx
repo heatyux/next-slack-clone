@@ -66,6 +66,7 @@ export const MessageList = ({ data }: MessageListProps) => {
               <Message
                 key={message._id}
                 body={message.body}
+                image={message.image}
                 authorName={message.user.name}
                 authorImage={message.user.image}
                 createdAt={message._creationTime}
