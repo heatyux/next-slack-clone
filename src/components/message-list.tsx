@@ -2,12 +2,16 @@ import { differenceInMinutes, format, isToday, isYesterday } from 'date-fns'
 
 import type { GetMessagesReturnType } from '@/features/messages/api/use-get-messages'
 
+import { ChannelHero } from './channel-hero'
 import { Message } from './message'
 
 const TIME_THRESHOLD = 5
 
 interface MessageListProps {
+  variant?: 'channel' | 'thread' | 'conversation'
   data: GetMessagesReturnType | undefined
+  channelName?: string
+  channelCreationTime?: number
 }
 
 const formatDateLabel = (dateStr: string) => {
@@ -24,7 +28,12 @@ const formatDateLabel = (dateStr: string) => {
   return format(date, 'EEEE, MMMM d')
 }
 
-export const MessageList = ({ data }: MessageListProps) => {
+export const MessageList = ({
+  variant = 'channel',
+  data,
+  channelName,
+  channelCreationTime,
+}: MessageListProps) => {
   // groupedMessages: { '2025-04-03': [message1, message2] }
   const groupedMessages = data?.reduce(
     (groups, message) => {
@@ -77,6 +86,10 @@ export const MessageList = ({ data }: MessageListProps) => {
           })}
         </div>
       ))}
+
+      {variant === 'channel' && channelName && channelCreationTime && (
+        <ChannelHero name={channelName} creationTime={channelCreationTime} />
+      )}
     </div>
   )
 }
