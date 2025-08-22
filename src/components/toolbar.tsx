@@ -1,0 +1,58 @@
+import { MessageSquareText, Pencil, Smile, Trash } from 'lucide-react'
+
+import { EmojiPopover } from './emoji-popover'
+import { Hint } from './hint'
+import { Button } from './ui/button'
+
+interface ToolbarProps {
+  isAuthor: boolean
+  isPending: boolean
+  handleReaction: (value: string) => void
+  hideThreadButton?: boolean
+}
+
+export const Toolbar = ({
+  isAuthor,
+  isPending,
+  handleReaction,
+  hideThreadButton,
+}: ToolbarProps) => {
+  return (
+    <div className="absolute top-0 right-5">
+      <div className="rounded-md border bg-white opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
+        <EmojiPopover
+          hint="Add reaction"
+          onEmojiSelect={(emoji) => handleReaction(emoji.native)}
+        >
+          <Button disabled={isPending} variant="ghost" size="iconSm">
+            <Smile className="size-4" />
+          </Button>
+        </EmojiPopover>
+
+        {!hideThreadButton && (
+          <Hint label="Reply in thread">
+            <Button disabled={isPending} variant="ghost" size="iconSm">
+              <MessageSquareText className="size-4" />
+            </Button>
+          </Hint>
+        )}
+
+        {isAuthor && (
+          <Hint label="Edit message">
+            <Button disabled={isPending} variant="ghost" size="iconSm">
+              <Pencil className="size-4" />
+            </Button>
+          </Hint>
+        )}
+
+        {isAuthor && (
+          <Hint label="Delete message">
+            <Button disabled={isPending} variant="ghost" size="iconSm">
+              <Trash className="size-4" />
+            </Button>
+          </Hint>
+        )}
+      </div>
+    </div>
+  )
+}

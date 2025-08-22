@@ -1,7 +1,12 @@
+import { useState } from 'react'
+
 import { differenceInMinutes, format, isToday, isYesterday } from 'date-fns'
 
+import { useCurrentMember } from '@/features/members/api/use-current-member'
 import type { GetMessagesReturnType } from '@/features/messages/api/use-get-messages'
+import { useWorkspaceId } from '@/hooks/use-workspace-id'
 
+import type { Id } from '../../convex/_generated/dataModel'
 import { ChannelHero } from './channel-hero'
 import { Message } from './message'
 
@@ -34,6 +39,11 @@ export const MessageList = ({
   channelName,
   channelCreationTime,
 }: MessageListProps) => {
+  const [editingId, setEditingId] = useState<Id<'messages'> | null>(null)
+  const workspaceId = useWorkspaceId()
+
+  const { data: currentMember } = useCurrentMember({ workspaceId })
+
   // groupedMessages: { '2025-04-03': [message1, message2] }
   const groupedMessages = data?.reduce(
     (groups, message) => {
@@ -78,9 +88,12 @@ export const MessageList = ({
                 image={message.image}
                 authorName={message.user.name}
                 authorImage={message.user.image}
+                isAuthor={message.memberId === currentMember?._id}
                 createdAt={message._creationTime}
                 updatedAt={message.updatedAt}
+                isEditing={editingId === message._id}
                 isCompact={isCompact}
+                hideThreadButton={variant === 'thread'}
               />
             )
           })}

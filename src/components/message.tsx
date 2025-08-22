@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import type { Doc } from '../../convex/_generated/dataModel'
 import { Hint } from './hint'
 import { Thumbnail } from './thumbnail'
+import { Toolbar } from './toolbar'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 
 interface MessageProps {
@@ -11,9 +12,12 @@ interface MessageProps {
   image: string | null | undefined
   authorName?: string
   authorImage?: string
+  isEditing: boolean
+  isAuthor: boolean
   createdAt: Doc<'messages'>['_creationTime']
   updatedAt: Doc<'messages'>['updatedAt']
   isCompact: boolean
+  hideThreadButton?: boolean
 }
 
 const Renderer = dynamic(() => import('./renderer'), { ssr: false })
@@ -27,9 +31,11 @@ export const Message = ({
   image,
   authorName,
   authorImage,
+  isAuthor,
   createdAt,
   updatedAt,
   isCompact,
+  hideThreadButton,
 }: MessageProps) => {
   const avatarFallback = authorName?.charAt(0).toUpperCase()
 
@@ -92,6 +98,13 @@ export const Message = ({
           ) : null}
         </div>
       </div>
+
+      <Toolbar
+        isAuthor={isAuthor}
+        handleReaction={() => {}}
+        hideThreadButton={hideThreadButton}
+        isPending={false}
+      />
     </div>
   )
 }
