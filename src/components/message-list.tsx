@@ -1,8 +1,10 @@
-import { format, isToday, isYesterday } from 'date-fns'
+import { differenceInMinutes, format, isToday, isYesterday } from 'date-fns'
 
 import type { GetMessagesReturnType } from '@/features/messages/api/use-get-messages'
 
 import { Message } from './message'
+
+const TIME_THRESHOLD = 5
 
 interface MessageListProps {
   data: GetMessagesReturnType | undefined
@@ -41,7 +43,7 @@ export const MessageList = ({ data }: MessageListProps) => {
   )
 
   return (
-    <div className="message-scrollbar flex flex-1 flex-col overflow-y-auto pb-4">
+    <div className="message-scrollbar flex flex-1 flex-col-reverse overflow-y-auto pb-4">
       {Object.entries(groupedMessages || {}).map(([dateKey, messages]) => (
         <div key={dateKey}>
           <div className="relative my-2 text-center">
@@ -51,13 +53,27 @@ export const MessageList = ({ data }: MessageListProps) => {
             </span>
           </div>
 
-          {messages.map((message) => (
-            <Message
-              key={message._id}
-              body={message.body}
-              createdAt={message._creationTime}
-            />
-          ))}
+          {messages.map((message, i) => {
+            const prevMessage = messages[i - 1]
+            const isCompact =
+              prevMessage &&
+              prevMessage.user._id === message.user._id &&
+              differenceInMinutes(
+                new Date(message._creationTime),
+                new Date(prevMessage._creationTime),
+              ) < TIME_THRESHOLD
+            return (
+              <Message
+                key={message._id}
+                body={message.body}
+                authorName={message.user.name}
+                authorImage={message.user.image}
+                createdAt={message._creationTime}
+                updatedAt={message.updatedAt}
+                isCompact={isCompact}
+              />
+            )
+          })}
         </div>
       ))}
     </div>
