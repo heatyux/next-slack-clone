@@ -4,11 +4,13 @@ import { toast } from 'sonner'
 
 import { useRemoveMessage } from '@/features/messages/api/use-remove-message'
 import { useUpdateMessage } from '@/features/messages/api/use-update-message'
+import { useToggleReaction } from '@/features/reactions/api/use-toggle-reaction'
 import { useConfirm } from '@/hooks/use-confirm'
 import { cn } from '@/lib/utils'
 
 import type { Doc, Id } from '../../convex/_generated/dataModel'
 import { Hint } from './hint'
+import { Reactions } from './reactions'
 import { Thumbnail } from './thumbnail'
 import { Toolbar } from './toolbar'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
@@ -17,6 +19,12 @@ interface MessageProps {
   id: Id<'messages'>
   body: string
   image: string | null | undefined
+  reactions: Array<
+    Omit<Doc<'reactions'>, 'memberId'> & {
+      count: number
+      memberIds: Id<'members'>[]
+    }
+  >
   authorName?: string
   authorImage?: string
   isEditing: boolean
@@ -39,6 +47,7 @@ export const Message = ({
   id,
   body,
   image,
+  reactions,
   authorName,
   authorImage,
   isAuthor,
@@ -53,13 +62,15 @@ export const Message = ({
     useUpdateMessage()
   const { mutate: removeMessage, isPending: isRemovingMessage } =
     useRemoveMessage()
+  const { mutate: toggleReaction, isPending: isTogglingReaction } =
+    useToggleReaction()
 
   const [ConfirmDialog, confirm] = useConfirm(
     'Delete message',
     'Are you sure you want to deelte the message? This cannot be undone.',
   )
 
-  const isPending = isUpdatingMessage || isRemovingMessage
+  const isPending = isUpdatingMessage || isRemovingMessage || isTogglingReaction
 
   const avatarFallback = authorName?.charAt(0).toUpperCase()
 
@@ -93,6 +104,20 @@ export const Message = ({
         },
         onError: () => {
           toast.error('Failed to delete message.')
+        },
+      },
+    )
+  }
+
+  const handleReaction = async (value: string) => {
+    toggleReaction(
+      {
+        messageId: id,
+        value,
+      },
+      {
+        onError: () => {
+          toast.error('Failed to toggle reaction.')
         },
       },
     )
@@ -146,9 +171,11 @@ export const Message = ({
               isPending={isPending}
               handleEdit={() => setEditingId(id)}
               handleDelete={handleDelete}
-              handleReaction={() => {}}
+              handleReaction={handleReaction}
             />
           )}
+
+          <Reactions data={reactions} onChange={handleReaction} />
         </div>
 
         <ConfirmDialog />
@@ -216,13 +243,15 @@ export const Message = ({
         {!isEditing && (
           <Toolbar
             isAuthor={isAuthor}
-            handleReaction={() => {}}
+            handleReaction={handleReaction}
             hideThreadButton={hideThreadButton}
             isPending={isPending}
             handleEdit={() => setEditingId(id)}
             handleDelete={handleDelete}
           />
         )}
+
+        <Reactions data={reactions} onChange={handleReaction} />
       </div>
 
       <ConfirmDialog />
