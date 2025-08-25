@@ -8,6 +8,7 @@ interface ToolbarProps {
   isAuthor: boolean
   isPending: boolean
   handleEdit: () => void
+  handleDelete: () => void
   handleReaction: (value: string) => void
   hideThreadButton?: boolean
 }
@@ -16,6 +17,7 @@ export const Toolbar = ({
   isAuthor,
   isPending,
   handleEdit,
+  handleDelete,
   handleReaction,
   hideThreadButton,
 }: ToolbarProps) => {
@@ -54,7 +56,12 @@ export const Toolbar = ({
 
         {isAuthor && (
           <Hint label="Delete message">
-            <Button disabled={isPending} variant="ghost" size="iconSm">
+            <Button
+              disabled={isPending}
+              variant="ghost"
+              size="iconSm"
+              onClick={handleDelete}
+            >
               <Trash className="size-4" />
             </Button>
           </Hint>
