@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { differenceInMinutes, format, isToday, isYesterday } from 'date-fns'
+import { Loader } from 'lucide-react'
 
 import { useCurrentMember } from '@/features/members/api/use-current-member'
 import type { GetMessagesReturnType } from '@/features/messages/api/use-get-messages'
@@ -17,6 +18,9 @@ interface MessageListProps {
   data: GetMessagesReturnType | undefined
   channelName?: string
   channelCreationTime?: number
+  loadMore: () => void
+  isLoadingMore: boolean
+  canLoadMore: boolean
 }
 
 const formatDateLabel = (dateStr: string) => {
@@ -38,6 +42,9 @@ export const MessageList = ({
   data,
   channelName,
   channelCreationTime,
+  loadMore,
+  isLoadingMore,
+  canLoadMore,
 }: MessageListProps) => {
   const [editingId, setEditingId] = useState<Id<'messages'> | null>(null)
   const workspaceId = useWorkspaceId()
@@ -102,6 +109,36 @@ export const MessageList = ({
           })}
         </div>
       ))}
+
+      <div
+        className="h-1"
+        ref={(el) => {
+          if (el) {
+            const observer = new IntersectionObserver(
+              ([entry]) => {
+                if (entry.isIntersecting && canLoadMore) {
+                  loadMore()
+                }
+              },
+              { threshold: 1.0 },
+            )
+
+            observer.observe(el)
+
+            return () => observer.disconnect()
+          }
+        }}
+      />
+
+      {isLoadingMore && (
+        <div className="relative my-2 text-center">
+          <hr className="absolute top-1/2 right-0 left-0 border-t border-gray-300" />
+
+          <span className="relative inline-block rounded-full border border-gray-300 bg-white px-4 py-1 text-xs shadow-sm">
+            <Loader className="size-4 animate-spin" />
+          </span>
+        </div>
+      )}
 
       {variant === 'channel' && channelName && channelCreationTime && (
         <ChannelHero name={channelName} creationTime={channelCreationTime} />
