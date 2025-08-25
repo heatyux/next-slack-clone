@@ -7,6 +7,7 @@ import { Button } from './ui/button'
 interface ToolbarProps {
   isAuthor: boolean
   isPending: boolean
+  handleEdit: () => void
   handleReaction: (value: string) => void
   hideThreadButton?: boolean
 }
@@ -14,6 +15,7 @@ interface ToolbarProps {
 export const Toolbar = ({
   isAuthor,
   isPending,
+  handleEdit,
   handleReaction,
   hideThreadButton,
 }: ToolbarProps) => {
@@ -39,7 +41,12 @@ export const Toolbar = ({
 
         {isAuthor && (
           <Hint label="Edit message">
-            <Button disabled={isPending} variant="ghost" size="iconSm">
+            <Button
+              disabled={isPending}
+              variant="ghost"
+              size="iconSm"
+              onClick={handleEdit}
+            >
               <Pencil className="size-4" />
             </Button>
           </Hint>

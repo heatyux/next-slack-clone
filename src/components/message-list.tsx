@@ -84,6 +84,7 @@ export const MessageList = ({
             return (
               <Message
                 key={message._id}
+                id={message._id}
                 body={message.body}
                 image={message.image}
                 authorName={message.user.name}
@@ -92,6 +93,7 @@ export const MessageList = ({
                 createdAt={message._creationTime}
                 updatedAt={message.updatedAt}
                 isEditing={editingId === message._id}
+                setEditingId={setEditingId}
                 isCompact={isCompact}
                 hideThreadButton={variant === 'thread'}
               />
