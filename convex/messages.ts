@@ -175,6 +175,88 @@ export const get = query({
   },
 })
 
+export const getById = query({
+  args: {
+    id: v.id('messages'),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx)
+
+    if (!userId) {
+      return null
+    }
+
+    const message = await ctx.db.get(args.id)
+
+    if (!message) {
+      return null
+    }
+
+    const currentMember = await getMember(ctx, message.workspaceId, userId)
+
+    if (!currentMember) {
+      return null
+    }
+
+    const member = await populateMember(ctx, currentMember._id)
+
+    if (!member) {
+      return null
+    }
+
+    const user = await populateUser(ctx, member.userId)
+
+    if (!user) {
+      return null
+    }
+
+    const reactions = await populateReactions(ctx, message._id)
+
+    const reactionWithCounts = reactions.map((reaction) => ({
+      ...reaction,
+      count: reactions.filter((r) => r.value === reaction.value).length,
+    }))
+
+    const dedupedReactions = reactionWithCounts.reduce(
+      (acc, reaction) => {
+        const exsitingReaction = acc.find((r) => r.value === reaction.value)
+
+        if (exsitingReaction) {
+          exsitingReaction.memberIds = Array.from(
+            new Set([...exsitingReaction.memberIds, reaction.memberId]),
+          )
+        } else {
+          acc.push({
+            ...reaction,
+            memberIds: [reaction.memberId],
+          })
+        }
+
+        return acc
+      },
+      [] as (Doc<'reactions'> & {
+        count: number
+        memberIds: Id<'members'>[]
+      })[],
+    )
+
+    const reactionsWithoutMemberIdProperty = dedupedReactions.map(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      ({ memberId, ...rest }) => rest,
+    )
+
+    return {
+      ...message,
+      image: message.image
+        ? await ctx.storage.getUrl(message.image)
+        : undefined,
+      user,
+      member,
+      reactions: reactionsWithoutMemberIdProperty,
+    }
+  },
+})
+
 export const create = mutation({
   args: {
     body: v.string(),
