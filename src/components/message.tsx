@@ -6,6 +6,7 @@ import { useRemoveMessage } from '@/features/messages/api/use-remove-message'
 import { useUpdateMessage } from '@/features/messages/api/use-update-message'
 import { useToggleReaction } from '@/features/reactions/api/use-toggle-reaction'
 import { useConfirm } from '@/hooks/use-confirm'
+import { usePanel } from '@/hooks/use-panel'
 import { cn } from '@/lib/utils'
 
 import type { Doc, Id } from '../../convex/_generated/dataModel'
@@ -32,7 +33,7 @@ interface MessageProps {
   isAuthor: boolean
   createdAt: Doc<'messages'>['_creationTime']
   updatedAt: Doc<'messages'>['updatedAt']
-  isCompact: boolean
+  isCompact?: boolean
   hideThreadButton?: boolean
 }
 
@@ -58,6 +59,8 @@ export const Message = ({
   isCompact,
   hideThreadButton,
 }: MessageProps) => {
+  const { parentMessageId, onOpenChange, onClose } = usePanel()
+
   const { mutate: updateMessage, isPending: isUpdatingMessage } =
     useUpdateMessage()
   const { mutate: removeMessage, isPending: isRemovingMessage } =
@@ -100,7 +103,9 @@ export const Message = ({
         onSuccess: () => {
           toast.success('Message deleted.')
 
-          // TODO: close the thread if opened
+          if (parentMessageId === id) {
+            onClose()
+          }
         },
         onError: () => {
           toast.error('Failed to delete message.')
@@ -172,6 +177,8 @@ export const Message = ({
               handleEdit={() => setEditingId(id)}
               handleDelete={handleDelete}
               handleReaction={handleReaction}
+              handleThread={() => onOpenChange(id)}
+              hideThreadButton={hideThreadButton}
             />
           )}
 
@@ -248,6 +255,7 @@ export const Message = ({
             isPending={isPending}
             handleEdit={() => setEditingId(id)}
             handleDelete={handleDelete}
+            handleThread={() => onOpenChange(id)}
           />
         )}
 

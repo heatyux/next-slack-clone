@@ -10,6 +10,7 @@ interface ToolbarProps {
   handleEdit: () => void
   handleDelete: () => void
   handleReaction: (value: string) => void
+  handleThread: () => void
   hideThreadButton?: boolean
 }
 
@@ -19,6 +20,7 @@ export const Toolbar = ({
   handleEdit,
   handleDelete,
   handleReaction,
+  handleThread,
   hideThreadButton,
 }: ToolbarProps) => {
   return (
@@ -35,7 +37,12 @@ export const Toolbar = ({
 
         {!hideThreadButton && (
           <Hint label="Reply in thread">
-            <Button disabled={isPending} variant="ghost" size="iconSm">
+            <Button
+              disabled={isPending}
+              variant="ghost"
+              size="iconSm"
+              onClick={handleThread}
+            >
               <MessageSquareText className="size-4" />
             </Button>
           </Hint>
