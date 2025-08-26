@@ -1,7 +1,12 @@
 import { getAuthUserId } from '@convex-dev/auth/server'
 import { v } from 'convex/values'
 
-import { query } from './_generated/server'
+import type { Id } from './_generated/dataModel'
+import { type QueryCtx, query } from './_generated/server'
+
+const populateUser = async (ctx: QueryCtx, userId: Id<'users'>) => {
+  return await ctx.db.get(userId)
+}
 
 export const get = query({
   args: { workspaceId: v.id('workspaces') },
@@ -33,7 +38,7 @@ export const get = query({
     const members = []
 
     for (const member of data) {
-      const user = await ctx.db.get(member.userId)
+      const user = await populateUser(ctx, member.userId)
 
       if (user) {
         members.push({
@@ -44,6 +49,47 @@ export const get = query({
     }
 
     return members
+  },
+})
+
+export const getById = query({
+  args: {
+    id: v.id('members'),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx)
+
+    if (!userId) {
+      return null
+    }
+
+    const member = await ctx.db.get(args.id)
+
+    if (!member) {
+      return null
+    }
+
+    const currentMember = await ctx.db
+      .query('members')
+      .withIndex('by_workspace_id_user_id', (q) =>
+        q.eq('workspaceId', member.workspaceId).eq('userId', userId),
+      )
+      .unique()
+
+    if (!currentMember) {
+      return null
+    }
+
+    const user = await populateUser(ctx, member.userId)
+
+    if (!user) {
+      return null
+    }
+
+    return {
+      ...member,
+      user,
+    }
   },
 })
 
