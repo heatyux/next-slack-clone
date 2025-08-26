@@ -1,30 +1,147 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
+import { differenceInMinutes, format, isToday, isYesterday } from 'date-fns'
 import { AlertTriangle, Loader, XIcon } from 'lucide-react'
+import dynamic from 'next/dynamic'
+import type Quill from 'quill'
+import { toast } from 'sonner'
 
 import { Message } from '@/components/message'
 import { Button } from '@/components/ui/button'
 import { useCurrentMember } from '@/features/members/api/use-current-member'
+import { useGenerateUploadUrl } from '@/features/upload/api/use-generate-upload-url'
+import { useChannelId } from '@/hooks/use-channel-id'
 import { useWorkspaceId } from '@/hooks/use-workspace-id'
 
 import type { Id } from '../../../../convex/_generated/dataModel'
+import { useCreateMessage } from '../api/use-create-message'
 import { useGetMessage } from '../api/use-get-message'
+import { useGetMessages } from '../api/use-get-messages'
+
+const Editor = dynamic(() => import('@/components/editor'), { ssr: false })
+
+const TIME_THRESHOLD = 5
+
+type CreateMessageValues = {
+  workspaceId: Id<'workspaces'>
+  channelId: Id<'channels'>
+  parentMessageId: Id<'messages'>
+  body: string
+  image?: Id<'_storage'>
+}
 
 interface ThreadProps {
   messageId: Id<'messages'>
   onClose: () => void
 }
 
+const formatDateLabel = (dateStr: string) => {
+  const date = new Date(dateStr)
+
+  if (isToday(date)) {
+    return 'Today'
+  }
+
+  if (isYesterday(date)) {
+    return 'Yesterday'
+  }
+
+  return format(date, 'EEEE, MMMM d')
+}
+
 export const Thread = ({ messageId, onClose }: ThreadProps) => {
   const workspaceId = useWorkspaceId()
+  const channelId = useChannelId()
 
   const { data: currentMember } = useCurrentMember({ workspaceId })
 
   const [editingId, setEditingId] = useState<Id<'messages'> | null>(null)
+  const [isPending, setIsPending] = useState(false)
+  const [editorKey, setEditorKey] = useState(0)
 
+  const innerRef = useRef<Quill | null>(null)
+
+  const { mutate: createMessage } = useCreateMessage()
+  const { mutate: generateUploadUrl } = useGenerateUploadUrl()
   const { data: message, isLoading } = useGetMessage({ id: messageId })
+  const { results, status, loadMore } = useGetMessages({
+    channelId,
+    parentMessageId: messageId,
+  })
 
-  if (isLoading) {
+  const isLoadingMore = status === 'LoadingMore'
+  const canLoadmore = status === 'CanLoadMore'
+
+  const groupedMessages = results?.reduce(
+    (groups, message) => {
+      const date = new Date(message._creationTime)
+      const dateKey = format(date, 'yyyy-MM-dd')
+
+      if (!groups[dateKey]) {
+        groups[dateKey] = []
+      }
+
+      groups[dateKey].unshift(message)
+
+      return groups
+    },
+    {} as Record<string, typeof results>,
+  )
+
+  const handleSubmit = async ({
+    body,
+    image,
+  }: {
+    body: string
+    image: File | null
+  }) => {
+    try {
+      setIsPending(true)
+      innerRef.current?.enable(false)
+
+      const values: CreateMessageValues = {
+        workspaceId,
+        channelId,
+        parentMessageId: messageId,
+        body,
+        image: undefined,
+      }
+
+      if (image) {
+        const url = await generateUploadUrl({ throwError: true })
+
+        if (!url) {
+          throw new Error('URL not found.')
+        }
+
+        const result = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-type': image.type },
+          body: image,
+        })
+
+        if (!result.ok) {
+          throw new Error('Failed to upload image.')
+        }
+
+        const { storageId } = await result.json()
+
+        values.image = storageId
+      }
+
+      await createMessage(values, { throwError: true })
+
+      setEditorKey((prev) => prev + 1)
+    } catch (error) {
+      console.error('[CREATE_MESSAGE]', error)
+      toast.error('Failed to send message.')
+    } finally {
+      setIsPending(false)
+      innerRef.current?.enable(true)
+    }
+  }
+
+  if (isLoading || status === 'LoadingFirstPage') {
     return (
       <div className="flex h-full flex-col">
         <div className="flex h-[49px] items-center justify-between border-b px-4">
@@ -71,7 +188,78 @@ export const Thread = ({ messageId, onClose }: ThreadProps) => {
         </Button>
       </div>
 
-      <div>
+      <div className="message-scrollbar flex flex-1 flex-col-reverse overflow-y-auto pb-4">
+        {Object.entries(groupedMessages || {}).map(([dateKey, messages]) => (
+          <div key={dateKey}>
+            <div className="relative my-2 text-center">
+              <hr className="absolute top-1/2 right-0 left-0 border-t border-gray-300" />
+              <span className="relative inline-block rounded-full border border-gray-300 bg-white px-4 py-1 text-xs shadow-sm">
+                {formatDateLabel(dateKey)}
+              </span>
+            </div>
+
+            {messages.map((message, i) => {
+              const prevMessage = messages[i - 1]
+              const isCompact =
+                prevMessage &&
+                prevMessage.user._id === message.user._id &&
+                differenceInMinutes(
+                  new Date(message._creationTime),
+                  new Date(prevMessage._creationTime),
+                ) < TIME_THRESHOLD
+
+              return (
+                <Message
+                  key={message._id}
+                  id={message._id}
+                  body={message.body}
+                  image={message.image}
+                  reactions={message.reactions}
+                  authorName={message.user.name}
+                  authorImage={message.user.image}
+                  isAuthor={message.memberId === currentMember?._id}
+                  createdAt={message._creationTime}
+                  updatedAt={message.updatedAt}
+                  isEditing={editingId === message._id}
+                  setEditingId={setEditingId}
+                  isCompact={isCompact}
+                  hideThreadButton
+                />
+              )
+            })}
+          </div>
+        ))}
+
+        <div
+          className="h-1"
+          ref={(el) => {
+            if (el) {
+              const observer = new IntersectionObserver(
+                ([entry]) => {
+                  if (entry.isIntersecting && canLoadmore) {
+                    loadMore()
+                  }
+                },
+                { threshold: 1.0 },
+              )
+
+              observer.observe(el)
+
+              return () => observer.disconnect()
+            }
+          }}
+        />
+
+        {isLoadingMore && (
+          <div className="relative my-2 text-center">
+            <hr className="absolute top-1/2 right-0 left-0 border-t border-gray-300" />
+
+            <span className="relative inline-block rounded-full border border-gray-300 bg-white px-4 py-1 shadow-sm">
+              <Loader className="size-4 animate-spin" />
+            </span>
+          </div>
+        )}
+
         <Message
           id={message._id}
           body={message.body}
@@ -85,6 +273,16 @@ export const Thread = ({ messageId, onClose }: ThreadProps) => {
           isEditing={editingId === message._id}
           setEditingId={setEditingId}
           hideThreadButton
+        />
+      </div>
+
+      <div className="px-4">
+        <Editor
+          key={editorKey}
+          innerRef={innerRef}
+          disabled={isPending}
+          onSubmit={handleSubmit}
+          placeholder="Reply..."
         />
       </div>
     </div>
