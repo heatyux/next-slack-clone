@@ -92,6 +92,7 @@ export const MessageList = ({
               <Message
                 key={message._id}
                 id={message._id}
+                memberId={message.memberId}
                 body={message.body}
                 image={message.image}
                 reactions={message.reactions}

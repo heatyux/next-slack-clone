@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 
 interface MessageProps {
   id: Id<'messages'>
+  memberId: Id<'members'>
   body: string
   image: string | null | undefined
   reactions: Array<
@@ -51,6 +52,7 @@ const formatFullTime = (date: Date) => {
 
 export const Message = ({
   id,
+  memberId,
   body,
   image,
   reactions,
@@ -68,7 +70,7 @@ export const Message = ({
   threadCount,
   threadTimestamp,
 }: MessageProps) => {
-  const { parentMessageId, onOpenMessage, onClose } = usePanel()
+  const { parentMessageId, onOpenMessage, onOpenProfile, onClose } = usePanel()
 
   const { mutate: updateMessage, isPending: isUpdatingMessage } =
     useUpdateMessage()
@@ -217,7 +219,7 @@ export const Message = ({
         )}
       >
         <div className="flex items-start gap-2">
-          <button>
+          <button onClick={() => onOpenProfile(memberId)}>
             <Avatar>
               <AvatarImage src={authorImage} alt={authorName} />
               <AvatarFallback>{avatarFallback}</AvatarFallback>
@@ -238,7 +240,7 @@ export const Message = ({
             <div className="flex w-full flex-col overflow-hidden">
               <div className="text-sm">
                 <button
-                  onClick={() => {}}
+                  onClick={() => onOpenProfile(memberId)}
                   className="text-primary font-bold hover:underline"
                 >
                   {authorName}
