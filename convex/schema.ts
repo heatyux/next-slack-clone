@@ -52,7 +52,7 @@ const schema = defineSchema({
     memberId: v.id('members'),
     value: v.string(),
   })
-    .index('by_worksapce_id', ['workspaceId'])
+    .index('by_workspace_id', ['workspaceId'])
     .index('by_message_id', ['messageId'])
     .index('by_member_id', ['memberId']),
 })
