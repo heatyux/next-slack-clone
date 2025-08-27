@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import type { Doc, Id } from '../../convex/_generated/dataModel'
 import { Hint } from './hint'
 import { Reactions } from './reactions'
+import { ThreadBar } from './thread-bar'
 import { Thumbnail } from './thumbnail'
 import { Toolbar } from './toolbar'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
@@ -35,6 +36,10 @@ interface MessageProps {
   updatedAt: Doc<'messages'>['updatedAt']
   isCompact?: boolean
   hideThreadButton?: boolean
+  threadName?: string
+  threadImage?: string
+  threadCount?: number
+  threadTimestamp?: number
 }
 
 const Renderer = dynamic(() => import('./renderer'), { ssr: false })
@@ -58,8 +63,12 @@ export const Message = ({
   updatedAt,
   isCompact,
   hideThreadButton,
+  threadName,
+  threadImage,
+  threadCount,
+  threadTimestamp,
 }: MessageProps) => {
-  const { parentMessageId, onOpenChange, onClose } = usePanel()
+  const { parentMessageId, onOpenMessage, onClose } = usePanel()
 
   const { mutate: updateMessage, isPending: isUpdatingMessage } =
     useUpdateMessage()
@@ -166,6 +175,15 @@ export const Message = ({
                     (edited)
                   </span>
                 ) : null}
+
+                <Reactions data={reactions} onChange={handleReaction} />
+                <ThreadBar
+                  name={threadName}
+                  image={threadImage}
+                  count={threadCount}
+                  timestamp={threadTimestamp}
+                  onClick={() => onOpenMessage(id)}
+                />
               </div>
             )}
           </div>
@@ -177,12 +195,10 @@ export const Message = ({
               handleEdit={() => setEditingId(id)}
               handleDelete={handleDelete}
               handleReaction={handleReaction}
-              handleThread={() => onOpenChange(id)}
+              handleThread={() => onOpenMessage(id)}
               hideThreadButton={hideThreadButton}
             />
           )}
-
-          <Reactions data={reactions} onChange={handleReaction} />
         </div>
 
         <ConfirmDialog />
@@ -243,6 +259,16 @@ export const Message = ({
               {updatedAt ? (
                 <span className="text-muted-foreground text-xs">(edited)</span>
               ) : null}
+
+              <Reactions data={reactions} onChange={handleReaction} />
+
+              <ThreadBar
+                name={threadName}
+                image={threadImage}
+                count={threadCount}
+                timestamp={threadTimestamp}
+                onClick={() => onOpenMessage(id)}
+              />
             </div>
           )}
         </div>
@@ -255,11 +281,9 @@ export const Message = ({
             isPending={isPending}
             handleEdit={() => setEditingId(id)}
             handleDelete={handleDelete}
-            handleThread={() => onOpenChange(id)}
+            handleThread={() => onOpenMessage(id)}
           />
         )}
-
-        <Reactions data={reactions} onChange={handleReaction} />
       </div>
 
       <ConfirmDialog />

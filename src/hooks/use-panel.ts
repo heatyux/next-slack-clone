@@ -3,7 +3,7 @@ import { useParentMessageId } from '@/features/messages/store/use-parent-message
 export const usePanel = () => {
   const [parentMessageId, setParentMessageId] = useParentMessageId()
 
-  const onOpenChange = (messageId: string) => {
+  const onOpenMessage = (messageId: string) => {
     setParentMessageId(messageId)
   }
 
@@ -13,7 +13,7 @@ export const usePanel = () => {
 
   return {
     parentMessageId,
-    onOpenChange,
+    onOpenMessage,
     onClose,
   }
 }
