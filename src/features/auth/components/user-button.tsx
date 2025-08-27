@@ -2,6 +2,7 @@
 
 import { useAuthActions } from '@convex-dev/auth/react'
 import { Loader, LogOut } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -14,6 +15,7 @@ import {
 import { useCurrentUser } from '../api/use-current-user'
 
 export const UserButton = () => {
+  const router = useRouter()
   const { signOut } = useAuthActions()
   const { data, isLoading } = useCurrentUser()
 
@@ -41,7 +43,14 @@ export const UserButton = () => {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="center" side="right" className="w-6">
-        <DropdownMenuItem onClick={signOut} className="h-10">
+        <DropdownMenuItem
+          onClick={async () => {
+            signOut()
+
+            router.replace('/auth')
+          }}
+          className="h-10"
+        >
           <LogOut className="mr-2 size-4" /> Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
