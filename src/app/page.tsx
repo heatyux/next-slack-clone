@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from 'react'
 
+import { Loader } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 import { UserButton } from '@/features/auth/components/user-button'
@@ -26,8 +27,8 @@ export default function Home() {
   }, [isLoading, open, router, setOpen, workspaceId])
 
   return (
-    <div>
-      <UserButton />
+    <div className="flex h-full flex-1 items-center justify-center bg-[#5e2c5f]/95 text-white">
+      <Loader className="size-5 animate-spin" />
     </div>
   )
 }
