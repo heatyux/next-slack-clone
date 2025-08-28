@@ -148,13 +148,12 @@ const Editor = ({
     }
   }
 
-  const onEmojiSelect = (emoji: any) => {
-    // TODO: emoji type
+  const onEmojiSelect = (emoji: string) => {
     const quill = quillRef.current
 
     if (!quill) return
 
-    quill.insertText(quill.getSelection()?.index || 0, emoji.native)
+    quill.insertText(quill.getSelection()?.index || 0, emoji)
   }
 
   const isIOS = /iPad|iPhone|iPod|Mac/.test(navigator.userAgent)

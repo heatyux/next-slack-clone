@@ -11,9 +11,15 @@ import {
   TooltipTrigger,
 } from './ui/tooltip'
 
+type EmojiData = {
+  id: string
+  name: string
+  native: string
+}
+
 interface EmojiPopoverProps {
   hint?: string
-  onEmojiSelect: (emoji: any) => void // TODO: emoji type
+  onEmojiSelect: (emoji: string) => void
 }
 
 export const EmojiPopover = ({
@@ -24,9 +30,8 @@ export const EmojiPopover = ({
   const [popoverOpen, setPopoverOpen] = useState(false)
   const [tooltipOpen, setTooltipOpen] = useState(false)
 
-  const onSelect = (emoji: any) => {
-    // TODO: emoji type
-    onEmojiSelect(emoji)
+  const onSelect = (emojiData: EmojiData) => {
+    onEmojiSelect(emojiData.native)
 
     setPopoverOpen(false)
 
