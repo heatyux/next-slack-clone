@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 
+import { Loader } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import type Quill from 'quill'
 import { toast } from 'sonner'
@@ -13,7 +14,16 @@ import { useWorkspaceId } from '@/hooks/use-workspace-id'
 
 import type { Id } from '../../../../../../convex/_generated/dataModel'
 
-const Editor = dynamic(() => import('@/components/editor'), { ssr: false })
+const Editor = dynamic(() => import('@/components/editor'), {
+  ssr: false,
+  loading: () => {
+    return (
+      <div className="flex h-[120px] items-center justify-center">
+        <Loader className="text-muted-foreground size-5 animate-spin" />
+      </div>
+    )
+  },
+})
 
 type CreateMessageValues = {
   body: string

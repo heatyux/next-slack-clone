@@ -1,4 +1,5 @@
 import { format, isToday, isYesterday } from 'date-fns'
+import { Loader } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { toast } from 'sonner'
 
@@ -43,8 +44,26 @@ interface MessageProps {
   threadTimestamp?: number
 }
 
-const Renderer = dynamic(() => import('./renderer'), { ssr: false })
-const Editor = dynamic(() => import('./editor'), { ssr: false })
+const Renderer = dynamic(() => import('./renderer'), {
+  ssr: false,
+  loading: () => {
+    return (
+      <div className="flex h-[120px] items-center justify-center">
+        <Loader className="text-muted-foreground size-5 animate-spin" />
+      </div>
+    )
+  },
+})
+const Editor = dynamic(() => import('./editor'), {
+  ssr: false,
+  loading: () => {
+    return (
+      <div className="flex h-[120px] items-center justify-center">
+        <Loader className="text-muted-foreground size-5 animate-spin" />
+      </div>
+    )
+  },
+})
 
 const formatFullTime = (date: Date) => {
   return `${isToday(date) ? 'Today' : isYesterday(date) ? 'Yesterday' : format(date, 'MMM d, yyyy')} at ${format(date, 'h:mm:ss a')}`

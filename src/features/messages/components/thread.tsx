@@ -18,7 +18,16 @@ import { useCreateMessage } from '../api/use-create-message'
 import { useGetMessage } from '../api/use-get-message'
 import { useGetMessages } from '../api/use-get-messages'
 
-const Editor = dynamic(() => import('@/components/editor'), { ssr: false })
+const Editor = dynamic(() => import('@/components/editor'), {
+  ssr: false,
+  loading: () => {
+    return (
+      <div className="flex h-[120px] items-center justify-center">
+        <Loader className="text-muted-foreground size-5 animate-spin" />
+      </div>
+    )
+  },
+})
 
 const TIME_THRESHOLD = 5
 
